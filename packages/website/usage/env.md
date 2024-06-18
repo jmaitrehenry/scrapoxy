@@ -109,7 +109,7 @@ _For MongoDB:_
 
 _For RabbitMQ:_
  
-- `STORAGE_DISTRIBUTED_RABBITMQ_URL` : URL of RabbitMQ server. The default value is `amqp://user:password@localhost:5672`.
+- `STORAGE_DISTRIBUTED_RABBITMQ_URI` : URL of RabbitMQ server. The default value is `amqp://user:password@localhost:5672`.
 - `STORAGE_DISTRIBUTED_RABBITMQ_QUEUE_ORDERS` : Queue of RabbitMQ to send CQRS orders. The default value is `scrapoxyorders`.
 - `STORAGE_DISTRIBUTED_RABBITMQ_QUEUE_EVENTS` : Queue of RabbitMQ to receive CQRS events. The default value is `scrapoxyevents`.
 
