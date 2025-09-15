@@ -25,16 +25,8 @@ export class InstallScriptBuilder {
                 '/root/certificate.pem'
             );
         const [
-            mainJs, packageJson, proxyupSh,
+            proxyupSh,
         ] = await Promise.all([
-            this.writeFileFromFile(
-                'proxy.js',
-                '/root/proxy.js'
-            ),
-            this.writeFileFromFile(
-                'package.json',
-                '/root/package.json'
-            ),
             this.writeFileFromFile(
                 'proxyup.sh',
                 '/etc/init.d/proxyup.sh'
@@ -44,18 +36,20 @@ export class InstallScriptBuilder {
         return [
             '#!/bin/bash',
             'sudo apt-get update',
+            'sudo apt-get remove -y unattended-upgrades',
             'sudo apt-get install -y ca-certificates curl gnupg',
             'sudo mkdir -p /etc/apt/keyrings',
-            'curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor --yes -o /etc/apt/keyrings/nodesource.gpg',
-            'echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list',
             'sudo apt-get update',
-            'sudo apt-get install nodejs -y',
-            ...mainJs,
-            ...packageJson,
+            'architecture=""',
+            'case $(uname -m) in',
+            'x86_64) architecture="amd64" ;;',
+            'arm) architecture=arm64 ;;',
+            'esac',
+            'curl https://jmaitrehenrycdn.blob.core.windows.net/scrapoxygo/proxy-linux-$architecture -o /root/proxy',
             ...proxyupSh,
             ...certificatePem,
             ...certificateKey,
-            'sudo npm install --prefix /root',
+            'sudo chmod a+x /root/proxy',
             'sudo chmod a+x /etc/init.d/proxyup.sh',
             'sudo update-rc.d proxyup.sh defaults',
             'sudo /etc/init.d/proxyup.sh start',

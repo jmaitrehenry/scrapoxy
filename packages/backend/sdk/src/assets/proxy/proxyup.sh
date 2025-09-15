@@ -2,13 +2,12 @@
 
 USER="root"
 APP_DIR="/root"
-NODE_APP="proxy.js"
+APP="./proxy"
 KWARGS=""
 PID_DIR="$APP_DIR/pid"
 PID_FILE="$PID_DIR/app.pid"
 LOG_DIR="$APP_DIR/log"
 LOG_FILE="$LOG_DIR/app.log"
-NODE_EXEC=$(which node)
 APP_NAME="proxyup"
 
 ###############
@@ -51,7 +50,7 @@ start_it() {
     chown $USER:$USER "$LOG_DIR"
 
     echo "Starting $APP_NAME ..."
-    echo "cd $APP_DIR && $NODE_EXEC $NODE_APP $KWARGS 1>$LOG_FILE 2>&1 & echo \$! > $PID_FILE" | sudo -i -u $USER
+    echo "cd $APP_DIR && $APP $KWARGS 1>$LOG_FILE 2>&1 & echo \$! > $PID_FILE" | sudo -i -u $USER
     echo "$APP_NAME started with pid $(get_pid)"
 }
 

@@ -168,15 +168,25 @@ export class AzureVmsTemplateBuilder {
     private addVmIp(name: string): AzureVmsTemplateBuilder {
         const publicIpAddress = {
             type: 'Microsoft.Network/publicIPAddresses',
-            apiVersion: '2020-05-01',
+            apiVersion: '2024-10-01',
             name: `${this.prefix}-${name}-ip`,
             location: '[parameters(\'location\')]',
             properties: {
-                publicIPAllocationMethod: 'Dynamic',
+                publicIPAllocationMethod: 'Static',
+                publicIPAddressVersion: 'IPv4',
+                ipTags: [
+                    {
+                        ipTagType: 'RoutingPreference',
+                        tag: 'Internet',
+                    },
+                ],
             },
             sku: {
-                name: 'Basic',
+                name: 'Standard',
             },
+            zones: [
+                1, 2,
+            ],
         };
         this.resources.push(publicIpAddress);
 

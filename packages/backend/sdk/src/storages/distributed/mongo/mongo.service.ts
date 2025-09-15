@@ -53,7 +53,7 @@ import {
     ProjectNotFoundError,
     ProjectTokenNotFoundError,
     ProxiesNotFoundError,
-    ProxyNotFoundError,
+    // ProxyNotFoundError,
     SourceNotFoundError,
     TaskNotFoundError,
     UserEmailAlreadyExistsError,
@@ -2036,7 +2036,8 @@ export class StorageMongoService implements IStorageService, IProbeService, OnMo
     ): Promise<void> {
         this.logger.debug(`updateProxyLastConnectionTs(): projectId=${projectId} / connectorId=${connectorId} / proxyId=${proxyId} / lastConnectionTs=${lastConnectionTs}`);
 
-        const { modifiedCount } = await this.colProxies.updateOne(
+        // const { modifiedCount } = await this.colProxies.updateOne(
+        await this.colProxies.updateOne(
             {
                 _id: proxyId,
                 projectId,
@@ -2049,13 +2050,13 @@ export class StorageMongoService implements IStorageService, IProbeService, OnMo
             }
         );
 
-        if (modifiedCount <= 0) {
-            throw new ProxyNotFoundError(
-                projectId,
-                connectorId,
-                proxyId
-            );
-        }
+        // if (modifiedCount <= 0) {
+        //     throw new ProxyNotFoundError(
+        //         projectId,
+        //         connectorId,
+        //         proxyId
+        //     );
+        // }
     }
 
     async getNextProxiesToRefresh(
