@@ -7,15 +7,20 @@ if (process.env.DOTENV_FILE) {
     });
 }
 
+console.log(process.env);
+
 export default {
     displayName: 'backend-test',
     preset: '../../../jest.preset.js',
-    testTimeout: 1000 * 10,
+    testTimeout: 10000,
     transform: {
         '^.+\\.ts$': [
             'ts-jest',
             {
                 tsconfig: '<rootDir>/tsconfig.spec.json',
+                isolatedModules: true,
+                useESM: true,
+                verbatimModuleSyntax: false,
             },
         ],
     },

@@ -3,9 +3,9 @@ import { Server } from 'net';
 import {
     BadRequestException,
     Controller,
+    Get,
     HttpCode,
     Module,
-    Post,
     Req,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -23,7 +23,7 @@ const USERAGENT_REGEXP = new RegExp(`^${SCRAPOXY_USER_AGENT_PREFIX}\/[^ ]+ \([^;
 
 @Controller()
 class FingerprintController {
-    @Post('json')
+    @Get('json')
     @HttpCode(200)
     async getFingerprint(@Req() req: Request): Promise<IFingerprint | undefined> {
         // Check useragent

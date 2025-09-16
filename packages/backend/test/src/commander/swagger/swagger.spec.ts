@@ -43,7 +43,7 @@ describe(
                     'should have the same swagger JSON files',
                     async() => {
                         const targetRaw = await fs.readFile(
-                            'packages/backend/test/src/assets/swagger.json',
+                            __dirname + '/../../assets/swagger.json',
                             'utf8'
                         );
                         const target = JSON.parse(targetRaw);

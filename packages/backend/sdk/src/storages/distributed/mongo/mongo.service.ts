@@ -948,7 +948,7 @@ export class StorageMongoService implements IStorageService, IProbeService, OnMo
                 $inc[ 'snapshot.bytesSent' ] = view.project.snapshot.bytesSent;
             }
 
-            if (view.project.requestsBeforeStop) {
+            if (view.project.requestsBeforeStop?.sum != null) {
                 $inc[ 'requestsBeforeStop.sum' ] = view.project.requestsBeforeStop.sum;
                 $inc[ 'requestsBeforeStop.count' ] = view.project.requestsBeforeStop.count;
 

@@ -538,7 +538,8 @@ describe(
                             expect(countProxiesOnlineViews(views))
                                 .toBe(connector.proxiesMax);
                         });
-                    }
+                    },
+                    ONE_SECOND_IN_MS * 20
                 );
 
                 it(
@@ -640,7 +641,8 @@ describe(
                         } finally {
                             httpsAgent.close();
                         }
-                    }
+                    },
+                    ONE_SECOND_IN_MS * 20
                 );
             }
         );
@@ -709,7 +711,8 @@ describe(
                             expect(countProxiesOnlineViews(views))
                                 .toBe(connector.proxiesMax);
                         });
-                    }
+                    },
+                    ONE_SECOND_IN_MS * 20
                 );
 
                 it(
@@ -728,7 +731,8 @@ describe(
                                     .toBeNull();
                             }
                         });
-                    }
+                    },
+                    ONE_SECOND_IN_MS * 20
                 );
 
                 it(
@@ -751,7 +755,7 @@ describe(
                             20
                         );
                     },
-                    ONE_MINUTE_IN_MS
+                    ONE_SECOND_IN_MS * 20
                 );
             }
         );

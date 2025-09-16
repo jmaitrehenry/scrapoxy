@@ -1,6 +1,6 @@
 import {
     IncomingMessage,
-    ServerResponse,
+    // ServerResponse,
 } from 'http';
 import {
     createServer,
@@ -19,13 +19,14 @@ import {
 } from '../helpers';
 import {
     SCRAPOXY_PROXY_HEADER_PREFIX,
-    SCRAPOXY_PROXY_HEADER_PREFIX_LC,
+    // SCRAPOXY_PROXY_HEADER_PREFIX_LC,
 } from '../info';
 import type {
     IProxy,
     IProxyLogger,
 } from './proxy.interface';
 import type { AddressInfo } from 'net';
+import {PassThrough} from "stream";
 
 
 export class Proxy implements IProxy {
@@ -69,13 +70,25 @@ export class Proxy implements IProxy {
                 );
             }
         );
+        // this.server.on(
+        //     'request',
+        //     (
+        //         req: IncomingMessage, res: ServerResponse
+        //     ) => {
+        //         res.statusCode = 404;
+        //         res.end();
+        //     }
+        // );
         this.server.on(
             'request',
             (
-                req: IncomingMessage, res: ServerResponse
+                req: IncomingMessage, socket: Socket, head: Buffer
             ) => {
-                res.statusCode = 404;
-                res.end();
+                this.connect(
+                    req,
+                    socket,
+                    head
+                );
             }
         );
     }
@@ -159,11 +172,16 @@ export class Proxy implements IProxy {
     private connect(
         req: IncomingMessage, socket: Socket, head: Buffer
     ) {
+        socket = req.socket;
         let
             headerWritten = false,
             hostname: string,
             port: number,
             proxySocket: Socket | undefined = void 0;
+
+        ++this.connectsCountValue;
+        const conn = this.connectsCountValue;
+        this.logger.debug(`${conn} connect`);
 
         socket.on(
             'error',
@@ -198,19 +216,22 @@ export class Proxy implements IProxy {
         socket.on(
             'close',
             () => {
+                this.logger.debug(`${conn} close`);
                 this.sockets.remove(socket);
             }
         );
 
-        if (req.headers[ `${SCRAPOXY_PROXY_HEADER_PREFIX_LC}-metrics` ] !== 'ignore') {
-            ++this.connectsCountValue;
-        }
+        // this.sockets.add(socket);
 
-        if (!(socket as any).authorized) {
-            socket.end(`HTTP/1.1 401 connect_error\r\n${SCRAPOXY_PROXY_HEADER_PREFIX}-Proxyerror: invalid certificate\r\n\r\n\r\n`);
+        // if (req.headers[ `${SCRAPOXY_PROXY_HEADER_PREFIX_LC}-metrics` ] !== 'ignore') {
+        // ++this.connectsCountValue;
+        // }
 
-            return;
-        }
+        // if (!(socket as any).authorized) {
+        //     socket.end(`HTTP/1.1 401 connect_error\r\n${SCRAPOXY_PROXY_HEADER_PREFIX}-Proxyerror: invalid certificate\r\n\r\n\r\n`);
+        //
+        //     return;
+        // }
 
         try {
             const urlOpts = parseConnectUrl(req.url);
@@ -237,9 +258,12 @@ export class Proxy implements IProxy {
                     }
 
                     if (!headerWritten) {
+                        socket.unpipe(proxySocket!);
+
                         const errMessage = sanitizeHeadersValue(err.message);
                         socket.end(`HTTP/1.1 500 connect_error\r\n${SCRAPOXY_PROXY_HEADER_PREFIX}-Proxyerror: ${errMessage}\r\n\r\n\r\n`);
                     } else {
+                        socket.unpipe(proxySocket!);
                         socket.end();
                     }
                 }
@@ -268,8 +292,11 @@ export class Proxy implements IProxy {
             proxySocket.on(
                 'timeout',
                 () => {
+                    this.logger.debug(
+                        `Error (proxySocket): timeout (${hostname}:${port})`
+                    );
+
                     proxySocket!.destroy();
-                    proxySocket!.emit('close');
                 }
             );
             proxySocket.setTimeout(this.timeout);
@@ -277,18 +304,44 @@ export class Proxy implements IProxy {
             proxySocket.on(
                 'connect',
                 () => {
-                    socketWriteAsync(
-                        proxySocket!,
-                        head
-                    )
-                        .then(() => socketWriteAsync(
+                    // socketWriteAsync(
+                    //     proxySocket!,
+                    //     head
+                    // )
+                    //     .then(() =>
+                        socketWriteAsync(
                             socket,
                             'HTTP/1.1 200 OK\r\n\r\n'
-                        ))
+                        )
                         .then(() => {
-                            headerWritten = true;
+                            this.logger.debug(`${conn} proxySocket connect`);
 
+                            headerWritten = true;
+                            const sIn = new PassThrough(),
+                                sOut = new PassThrough();
+                            const readListener = (chunk: Buffer) => {
+                                console.log(chunk.toString());
+                            };
+                            sIn.on(
+                                'data',
+                                readListener
+                            );
+
+                            const writeListener = (chunk: Buffer) => {
+                                console.log(chunk.toString());
+                            };
+
+                            sOut.on(
+                                'data',
+                                writeListener
+                            );
+
+
+
+                            // socket.pipe(proxySocket!);
+                            socket.pipe(sIn);
                             proxySocket!.pipe(socket);
+                            proxySocket!.pipe(sOut);
                         })
                         .catch((err: any) => {
                             proxySocket!.emit(
